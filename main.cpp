@@ -1,6 +1,6 @@
 #include <algorithm> // for std::shuffle
 #include <array>
-#include <cassert>
+#include <cassert> // for assert()
 #include <ctime>
 #include <iostream>
 #include <random>
@@ -106,6 +106,8 @@ public:
     }
 };
 
+
+
 class Deck
 {
 public:
@@ -115,6 +117,7 @@ public:
 
 private:
     array_type m_deck{};
+    index_type m_cardIndex {0};
 
 public:
     Deck()
@@ -146,15 +149,137 @@ public:
         static std::mt19937 mt{ static_cast<std::mt19937::result_type>(std::time(nullptr)) };
 
         std::shuffle(m_deck.begin(), m_deck.end(), mt);
+
+        m_cardIndex = 0;
     }
+
+    const Card& dealCard()
+    {
+        assert(m_cardIndex < m_deck.size()); // added this from solution
+
+        index_type temp = m_cardIndex;
+        m_cardIndex = m_cardIndex + 1;
+        return m_deck[temp];
+    }
+
 };
+
+// Maximum score before losing.
+constexpr int g_maximumScore{ 21 };
+
+// Minimum score that the dealer has to have.
+constexpr int g_minimumDealerScore{ 17 };
+
+class Player
+{
+private:
+    int m_score{};
+public:
+    int drawCard(Deck& deck)
+    {
+        Card card = deck.dealCard();
+        m_score = m_score + card.value();
+        
+        return card.value();
+    }
+    int score()
+    {
+        return m_score;
+    }
+    bool isBust()
+    {
+        if (m_score > g_maximumScore)
+        {
+            return true;
+        }
+
+    }
+
+};
+
+
+
+/////////////////////////////
+
+
+// // Returns true if the player went bust. False otherwise.
+// bool playerTurn(const deck_type& deck, index_type& nextCardIndex, Player& player)
+// {
+//     while (true)
+//     {
+//         if (player.score > g_maximumScore)
+//         {
+//             // This can happen even before the player had a choice if they drew 2
+//             // aces.
+//             std::cout << "You busted!\n";
+//             return true;
+//         }
+//         else
+//         {
+//             if (playerWantsHit())
+//             {
+//                 int cardValue { getCardValue(deck.at(nextCardIndex++)) };
+//                 player.score += cardValue;
+//                 std::cout << "You were dealt a " << cardValue << " and now have " << player.score << '\n';
+//             }
+//             else
+//             {
+//                 // The player didn't go bust.
+//                 return false;
+//             }
+//         }
+//     }
+// }
+
+// // Returns true if the dealer went bust. False otherwise.
+// bool dealerTurn(const deck_type& deck, index_type& nextCardIndex, Player& dealer)
+// {
+//     // Draw cards until we reach the minimum value.
+//     while (dealer.score < g_minimumDealerScore)
+//     {
+//         int cardValue{ getCardValue(deck.at(nextCardIndex++)) };
+//         dealer.score += cardValue;
+//         std::cout << "The dealer turned up a " << cardValue << " and now has " << dealer.score << '\n';
+
+//     }
+
+//     // If the dealer's score is too high, they went bust.
+//     if (dealer.score > g_maximumScore)
+//     {
+//         std::cout << "The dealer busted!\n";
+//         return true;
+//     }
+
+//     return false;
+// }
+
+
+
+///////////////////////////////////
+
+
+
+
+
+
+
+
 
 int main()
 {
-    Deck deck;
-    deck.print();
+    Deck deck{};
+
     deck.shuffle();
     deck.print();
+
+    Player player{};
+    Player dealer{};
+
+    int playerCard { player.drawCard(deck) };
+    std::cout << "The player drew a card with value " << playerCard << " and now has score " << player.score() << '\n';
+
+    int dealerCard { dealer.drawCard(deck) };
+    std::cout << "The dealer drew a card with value " << dealerCard << " and now has score " << dealer.score() << '\n';
 
     return 0;
 }
