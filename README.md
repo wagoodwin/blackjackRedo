@@ -1,1 +1,1 @@
-Redoing blackjack game with oop. Borrowed stuff from learncpp. 
+Redoing blackjack game with oop. Followed along with learncpp.com's quiz.
